@@ -1,0 +1,560 @@
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title></title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width", initial-scale=1">
+  
+  <!-- 
+    <script src="lib/jquery.min.js" ></script>
+  -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.31/jquery.min.js">  </script>
+  <link rel="stylesheet" href="lib/puretable.css"/>
+  <link rel="stylesheet" href="lib/jquery-ui.css"/>
+  <link rel="stylesheet" href="resources/demos/style.css"/>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <!-- <script src="lib/jquery-1.12.4.js"></script> -->
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- <script src="lib/jquery-ui.js"></script>-->
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script type="appplication/javascript" src="common.js"></script>
+  <script>
+      $(function(){
+          $("#tabs").tabs();
+          $(document).tooltip();
+      });
+      var loadCounter = 0;
+      var loadCounterText = "";
+      var sprint = false;
+  </script>
+</head>
+<body>
+    <h4 id="loggedUser">You are not Logged in!</h4>
+    <div id="Project" style="border-style: solid; float:left;">
+        <div id="IssueType" style="border-style:dashed;"></div>
+    </div>
+    <div id="Board" style="border-style: solid;clear:both;"></div>
+    <select id="ddlSprint1" class="ddl"></select>
+    <input type="checkbox" id="chkStaus" checked class="ddl">Include</input>
+    <select id="ddlStatus1" class="ddl">
+        <option value="%22To%20Do%22%2C%20%22In%20Progress%22%2C%20%22Done%22">--All Status--</option>
+        <option value="%22To%20Do%22">To Do</option>
+        <option value="%22In%20Progress%22">To Do</option>
+        <option value="%22Done%22">To Do</option>
+    </select>
+    <button id="btn">Refresh</button>
+    <span id="loader">&nbsp;&nbsp;</span>
+    <div id="tabs"></div>
+    <ul>
+        <li><a href="#tabs-stories">Sprint User Stories<span id="storyCount"></span></a></li>
+        <li><a href="#tabs-tasks">Dev Tasks<span id="taskCount"></span></a></li>
+        <li><a href="#tabs-bugs">Bugs<span id="bugsCount"></span></a></li>
+        <li><a href="#tabs-chart">Chart</a></li>
+    </ul>
+    <div id="tabs-stories">
+        <h2>Sprint User Stories</h2>
+        <textarea id="storiesJson"></textarea>
+        <table id="stories" class="pure-table pure-table-horizontal"></table>
+    </div>
+    <div id="tabs-tasks">
+        <h2>Dev Tasks</h2>
+        <textarea id="devJson"></textarea>
+        <table id="dev" class="pure-table pure-table-horizontal"></table>
+    </div>
+    <div id="tabs-bugs">
+        <h2>Dev Tasks</h2>
+        <textarea id="bugsJson"></textarea>
+        <table id="bugs" class="pure-table pure-table-horizontal"></table>
+    </div>
+    <div id="tabs-chart">
+        <div id="chartContainer" style="height: 370px;width:100%;"></div>
+    </div>
+</body>
+<script type="text-javascript">
+    var sprintID = '0';
+    //var boardID = $('ddlSprint1 :selected').attr('boardid');
+    //var type = $('ddlSprint1 :selected').attr('type');
+    var assignee = $('ddlAssignee').val() = "0" ? "" : "assignee%3D" + $('ddlAssignee').val() + "%20and%20";
+
+    var status = $('ddlStatus1').val() == "0" ? "" : "statusCategory%20" + ($("#chkStatus:checked").length == 1 ? "": "%20not%20")+ "in%20(" + $('#ddlStatus1').val() + ")%20and%20";
+
+    $(document).ready(function(){
+        login(true);
+
+        $('.ddl').change(function(){
+            sprintID = $('#ddlSprint1').val();
+            if(sprintID != 0)
+                sprint = true;
+            else
+                sprint = false;
+            
+            boardID = $('#ddlSprint1:selected').attr('boardid');
+            type = $('ddlSprint1 :selected').attr('type');
+            assignee = $('ddlAssignee').val() = "0" ? "" : "assignee%3D" + $('ddlAssignee').val() + "%20and%20";
+            status = $('ddlStatus1').val() == "0" ? "" : "statusCategory%20" + ($("#chkStatus:checked").length == 1 ? "": "%20not%20")+ "in%20(" + $('#ddlStatus1').val() + ")%20and%20";
+
+            //alert(boardID);
+            //alert(sprintID);
+            $("#stories").html();
+            $("#dev").html();
+            $("#bugs").html();
+            $("#chart").html();
+
+            $("#storyCount").text();
+            $("#taskCount").text();
+            $("#bugsCount").text();
+
+        });
+        //onload();
+        $('#btn').click(function(){
+            $('#stories').html('');
+            $('#dev').html('');
+            $('#bugs').html('');
+            $('#chart').html('');
+
+            $("#storyCount").text();
+            $("#taskCount").text();
+            $("#bugsCount").text();
+            login(false);
+            onload();
+        });
+    });
+    
+    var boardID = '1234';   //TODO: Change boardID
+    var type = 'Story';
+    function init(){
+        loadSprint(boardID, type);
+        initCommon();
+    }
+    function loadSprints(boardID, type){
+        loader(1);
+        $("#ddlSprint1").attr('placeholder', 'Loading...');
+        $("#ddlSprint1").append("<option value='0' boardid='" + boardID + "' type='" + type + "'>No Sprint...</option>");
+        $.get("https://athenajira.athenahealth.com/rest/agile/latest/board/ + boardID + "/sprint", 
+            function(){
+                loader(0);
+                //$("#ddlSprint1").html('');
+                $.each(data.values), function(i, val){
+                    
+                    selected = "";
+                    //if(i==0) selected = "selected='selected'";
+
+                    $("#ddlSprint1").append("<option " + selected + " value='" + val.id + "' boardid='" + boardID + "' type='" + type + "'>" 
+                        + "val.name"
+                        + "::" 
+                        + "val.state"
+                        + "</option>");
+                });
+                $("#ddlSprint1").change();
+            })
+            .fail( function(){
+                    loader(100);
+            });
+    }
+
+    function getValArray(data, isName)
+    {
+        if(data== undefined || data == null || data.length==0)
+            return '';
+        
+        var resultString = '';
+        $.each(data, function(i, val){
+            if(i != 0)
+                resultString += ', ';
+
+            if(isName)
+                resultString += val.name;
+            else
+                resultString += val;
+
+        });
+        return resultString;
+    }
+
+    function onload(){
+        var NoSprint = 'board/' + boardID 
+        + '/issue?jql=Project%20%3D%20' + 'CONMGMT' + '%20and%20sprint%20is%20EMPTY%20and%20(%22Epic%20Link%22%20is%20EMPTY%20fixVersion%20is%20EMPTY)%20and%20';
+
+        var withSprint = 'board/' + boardID 
+        + '/sprint/' + sprintID 
+        + 'issue?jql=';
+
+        if(jqlQuery == ''){
+            if(sprint)
+            {
+                query1 = withSprint + assignee + status + 'type%3D%22' + type + '%22';
+                query2 = withSprint + assignee + status + 'type%3D%22' + 'Sub-task%22%20and%20%22Task%20Type%22%20is%20EMPTY';
+                query3 = withSprint + assignee + status + 'type%3D%22' + 'Bug' + '%22';
+            }
+            else{
+                query1 = NoSprint + assignee + status + 'type%3D%22' + type + '%22';
+                query2 = NoSprint + assignee + status + 'type%3D%22' + 'Sub-task%22%20and%20%22Task%20Type%22%20is%20EMPTY';
+                query3 = NoSprint + assignee + status + 'type%3D%22' + 'Bug' + '%22';
+            }
+        }
+        else
+        {
+            query1 = "board/" + boardID + "/issue?maxResults=500&jql='" + jqlQuery + '%20and%20type%3D%22' + type + '%22';
+            query2 = "board/" + boardID + "/issue?maxResults=500&jql='" + jqlQuery + '%20and%20type%3D%22' + 'Sub-task%22%20and%20%22Task%20Type%22%20is%20EMPTY';
+            query3 = "board/" + boardID + "/issue?maxResults=500&jql='" + jqlQuery + '%20and%20type%3D%22' + 'Bug' + '%22';
+        }
+
+        loader(1);
+
+        $.get("https://athenajira.athenahealth.com/rest/agile/1.0/" + query1 + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        function(data, status){
+            loader(0);
+            $('storiesJson').val(JSON.stringify(data));
+            $("#stories").append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>
+            + "<th>Remaining</th><th>Original Estimate</th><th>Time Spent</th><th>Variance</th>"
+            + "<th>% Completion</th><th>Sub-tasks</th><th>Story Points</th><th>Details</th>"
+            + "</tr></thead>");
+
+            var totalRemaining = 0;
+            var totalOriginal = 0;
+            var totalTimeSpent = 0;
+            var totalVariance = 0;
+            var countIssues = 0;
+            var countSubtask = 0;
+            var countAssignees = 0;
+            var totalStoryPoints = 0;
+            var assignees = [];
+            var uniqueAssignees = [];
+            
+            $("#stories").append("<tbody>");
+            $("#storyCount").text("(" + data.total + ")");
+
+            $.each(data.issues, function(i, val) {
+                if((val.fields.status.statusCategory.colorName.toLowerCase() == 'green' 
+                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    & val.fields.aggregateprogress.percent < 100)
+                {
+                    varianceMarker = true;
+                }
+                else
+                {
+                    varianceMarker = false;
+                }
+                variance = (varianceMarker ? val.fields.aggregatetimeestimate / 3600 : ( val.fields.aggregatetimeoriginalestimate - (val.fields.aggregatetimeestimate + val.fields.aggregatetimespent)) / 3600);
+
+                var details = '';
+                
+                if(val.fields.epic != undefined || val.fields.epic != null)
+                    details += "epic: " + val.fields.epic.name + "<br/>";
+                
+                details += "fixVersions: " + getValArray(val.fields.fixVersions, true) + "<br/>";
+                details += "components: " + getValArray(val.fields.components, true) + "<br/>";
+
+                if(val.fields.duedate != undefined || val.fields.labels != null)
+                {
+                    details += "labels: ";
+                    details +=  getValArray(val.fields.labels, true) + "<br/>";
+                }
+
+                //if(val.fields.feature)
+
+                var scopeChange = ((val.fields.sprint != undefined && val.fields.created > val.fields.sprint.startDate) ? "<span style='background: red;'>*</span>" : "");
+
+                $("#stories").append(
+                    "<tr class='hide' id='tr" + i + "'>"
+                        + "<td>" + (i+1) + "</td>"
+                        + "<td>" + val.id + "</td>"
+                        + "<td>" + scopeChange + val.key
+                            + "<a href='" + baseurl + "browse/" + val.key + "' target='_blank'><img src='images/newtab.png' style='height: 20px'></img></a></td>"
+                        + "<td bgcolor='" + val.fields.status.statusCategory.colorName + "' title='" + val.fields.status.statusCategory.name + "'>"
+                            + "<img src='" + val.fields.status.iconUrl + "'></img>"
+                            + "<span style= 'background: " + val.fields.status.statusCategory.colorName + "'>"+ val.fields.status.name +"</span>"
+                            + "</td>"
+                        + "<td>"
+                            + "<img src='" + val.fields.assignee.avatarUrls['16x16'] + "' style='height: 20px'></img>"
+                            + "<span>" + val.fields.assignee.dispalyName + "</span>"
+                            + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimeestimate / 3600
+                            + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimeoriginalestimate / 3600
+                                + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimespent / 3600
+                                + "</td>"
+                        + "<td align='right'>" + (varianceMarker) ? "<span style='background: red;'>" + variance + "</span>" : variance)
+                                + "</td>"
+                        + "<td align='right'>" + isNull(val.fields.aggregateprogress.percent) + "%"
+                                + "</td>"
+                        + "<td align='right'>" + (val.fields.subtasks.length)
+                                + "</td>"
+                        + "<td align='right'>" + "storypoint"
+                                + "</td>"
+                        + "<td align='right'>" + details
+                                + "</td>"
+                    + "</tr>"
+                    );
+                    totalVariance += (varianceMarker 
+                        ? val.fields.aggregatetimeestimate / 3600 
+                        : (
+                                val.fields.aggregatetimeoriginalestimate - (val.fields.aggregatetimeestimate + val.fields.aggregatetimespent)
+                            ) / 3600);
+                    totalRemaining += val.fields.aggregatetimeestimate / 3600;
+                    totalOriginal += val.fields.aggregatetimeoriginalestimate / 3600;
+                    totalTimeSpent += val.fields.aggregatetimespent / 3600;
+
+                    totalStoryPoints += 0; //val.fields.storypoints
+
+                    countIssues += 1;
+                    countSubtask += (val.fields.subtasks.length);
+
+                    assignees.push(val.fields.assignee.dispalyName);
+            })
+
+            uniqueAssignees = assignees.filter(onlyUnique);
+            var totalPercent = (isNull((totalTimeSpent / (totalRemaining + totalTimeSpent))) == '') ? '' : parseFloat(((totalTimeSpent / (
+                totalRemaining + totalTimeSPent )) * 100).toPrecision(2));
+            totalPercent = isNaN(totalPercent) ? '' : (totalPercent);
+            
+            //footer
+            $("#stories").append(
+                "<tr>"
+                    + "<th></th>"
+                    + "<th></th>"
+                    + "<th></th>"
+                    + "<th>&Sigma;: " + uniqueAssignees.length + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalRemaining + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalOriginal + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalTimeSpent + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalVariance + "</th>"
+                    + "<th align='right'>% Overall: " + totalPercent + "</th>"
+                    + "<th align='right'>&Sigma;: " + countSubtask + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalStoryPoints + "</th>"
+                    + "<th></th>"
+                + "</tr>");
+            $("#stories").append(
+                "<tr>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th>Variance: " + totalVariance + "</th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        //+ "<th></th>"
+                + "</tr>");
+        })
+        .fail(function(){
+            loader(100);
+        });
+        
+        loader(1);
+        loadgrid("dev", "Task", query2);
+        loader(1);
+        loadgrid("Bugs", "Bug", query2);
+    }
+
+    const loadgrid = (tasktype, type, query) =>
+    //function loadgrid(tasktype, type, query)
+    {
+        $.get("https://athenajira.athenahealth.com/rest/agile/1.0/" + query + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        function(data, status){
+            loader(0);
+            $('#' + tasktype + 'Json').val(JSON.stringify(data));
+            $("#"+ tasktype).append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>
+            + "<th>Remaining</th><th>Original Estimate</th><th>Time Spent</th><th>Variance</th>"
+            + "<th>% Completion</th><th>Sub-tasks</th><th>Story Points</th><th>Details</th>"
+            + "</tr></thead>");
+
+            var totalRemaining = 0;
+            var totalOriginal = 0;
+            var totalTimeSpent = 0;
+            var totalVariance = 0;
+            var countIssues = 0;
+            var countSubtask = 0;
+            var countAssignees = 0;
+            var totalStoryPoints = 0;
+            var assignees = [];
+            var uniqueAssignees = [];
+            
+            $("#"+ tasktype).append("<tbody>");
+            $("#"+ tasktype + "Count").text("(" + data.total + ")");
+
+            $.each(data.issues, function(i, val) {
+                if((val.fields.status.statusCategory.colorName.toLowerCase() == 'green' 
+                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    & val.fields.aggregateprogress.percent < 100)
+                {
+                    varianceMarker = true;
+                }
+                else
+                {
+                    varianceMarker = false;
+                }
+                variance = (varianceMarker ? val.fields.aggregatetimeestimate / 3600 : ( val.fields.aggregatetimeoriginalestimate - (val.fields.aggregatetimeestimate + val.fields.aggregatetimespent)) / 3600);
+
+                var details = '';
+                
+                if(val.fields.epic != undefined || val.fields.epic != null)
+                    details += "epic: " + val.fields.epic.name + "<br/>";
+                
+                details += "fixVersions: " + getValArray(val.fields.fixVersions, true) + "<br/>";
+                details += "components: " + getValArray(val.fields.components, true) + "<br/>";
+
+                if(val.fields.duedate != undefined || val.fields.labels != null)
+                {
+                    details += "labels: ";
+                    details +=  getValArray(val.fields.labels, true) + "<br/>";
+                }
+
+                //if(val.fields.feature)
+
+                var scopeChange = ((val.fields.sprint != undefined && val.fields.created > val.fields.sprint.startDate) ? "<span style='background: red;'>*</span>" : "");
+
+                $("#"+ tasktype).append(
+                    "<tr class='hide' id='tr" + i + "'>"
+                        + "<td>" + (i+1) + "</td>"
+                        + "<td>" + val.id + "</td>"
+                        + "<td>" + scopeChange + val.key
+                            + "<a href='" + baseurl + "browse/" + val.key + "' target='_blank'><img src='images/newtab.png' style='height: 20px'></img></a></td>"
+                        + "<td bgcolor='" + val.fields.status.statusCategory.colorName + "' title='" + val.fields.status.statusCategory.name + "'>"
+                            + "<img src='" + val.fields.status.iconUrl + "'></img>"
+                            + "<span style= 'background: " + val.fields.status.statusCategory.colorName + "'>"+ val.fields.status.name +"</span>"
+                            + "</td>"
+                        + "<td>"
+                            + "<img src='" + val.fields.assignee.avatarUrls['16x16'] + "' style='height: 20px'></img>"
+                            + "<span>" + val.fields.assignee.dispalyName + "</span>"
+                            + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimeestimate / 3600
+                            + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimeoriginalestimate / 3600
+                                + "</td>"
+                        + "<td align='right'>" + val.fields.aggregatetimespent / 3600
+                                + "</td>"
+                        + "<td align='right'>" + (varianceMarker) ? "<span style='background: red;'>" + variance + "</span>" : variance)
+                                + "</td>"
+                        + "<td align='right'>" + isNull(val.fields.aggregateprogress.percent) + "%"
+                                + "</td>"
+                        + "<td align='right'>" + (val.fields.subtasks.length)
+                                + "</td>"
+                        + "<td align='right'>" + "storypoint"
+                                + "</td>"
+                        + "<td align='right'>" + details
+                                + "</td>"
+                    + "</tr>"
+                    );
+                    totalVariance += (varianceMarker 
+                        ? val.fields.aggregatetimeestimate / 3600 
+                        : (
+                                val.fields.aggregatetimeoriginalestimate - (val.fields.aggregatetimeestimate + val.fields.aggregatetimespent)
+                            ) / 3600);
+                    totalRemaining += val.fields.aggregatetimeestimate / 3600;
+                    totalOriginal += val.fields.aggregatetimeoriginalestimate / 3600;
+                    totalTimeSpent += val.fields.aggregatetimespent / 3600;
+
+                    totalStoryPoints += 0; //val.fields.storypoints
+
+                    countIssues += 1;
+                    countSubtask += (val.fields.subtasks.length);
+
+                    assignees.push(val.fields.assignee.dispalyName);
+            })
+
+            uniqueAssignees = assignees.filter(onlyUnique);
+            var totalPercent = (isNull((totalTimeSpent / (totalRemaining + totalTimeSpent))) == '') ? '' : parseFloat(((totalTimeSpent / (
+                totalRemaining + totalTimeSPent )) * 100).toPrecision(2));
+            totalPercent = isNaN(totalPercent) ? '' : (totalPercent);
+            
+            //footer
+            $("#"+ tasktype).append(
+                "<tr>"
+                    + "<th></th>"
+                    + "<th></th>"
+                    + "<th></th>"
+                    + "<th>&Sigma;: " + uniqueAssignees.length + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalRemaining + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalOriginal + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalTimeSpent + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalVariance + "</th>"
+                    + "<th align='right'>% Overall: " + totalPercent + "</th>"
+                    + "<th align='right'>&Sigma;: " + countSubtask + "</th>"
+                    + "<th align='right'>&Sigma;: " + totalStoryPoints + "</th>"
+                    + "<th></th>"
+                + "</tr>");
+            $("#"+ tasktype).append(
+                "<tr>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th>Variance: " + totalVariance + "</th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        + "<th></th>"
+                        //+ "<th></th>"
+                + "</tr>");
+        })
+        .fail(function(){
+            loader(100);
+        });
+    }
+
+    const isNull = (data) =>
+    //function isNull(data)
+    {
+        if(data == null || data == undefined || data == "NaN" || isNaN(data))
+            return '';
+        
+        return data;
+    }
+
+    const onlyUnique = (value, index, self) =>
+    //function onlyUnique(value, index, self)
+    {
+        return self.indexOf(value) === index;
+    }
+
+    const unhide = (issueid) =>
+    //function unhide(issueid)
+    {
+        controls = "<input id='addwl_" + issueid + "_comment'" type='text' name='Comments'>Comments</input><br/>";
+        controls += "<input id='addwl_" + issueid + "_timeSpent'" type='number' name='Time Spent (hrs)'>Time Spent</input><br/>";
+        $('#addwl_' + issueid).html(controls);
+
+    }
+
+    const getwldata = (issueid) =>
+    //function getwldata(issueid)
+    {
+        var wldata = {
+            timeSpentSeconds: $('addwl_' + issueid + '_timeSpent').val() * 3600;
+            comment: $('addwl_' + issueid + '_comment').val()
+        };
+
+        return wldata;
+    }
+
+    const compare = (a, b) =>
+    {
+        var A = a.x;
+        var B = b.x;
+
+        let comparison = 0;
+        if(A > B){
+            comparison = 1;
+        }
+        else if(A < B){
+            comparion = -1;
+        }
+        return comparison;
+    }
+
+
+
+</script>
+</html>
