@@ -9,7 +9,10 @@
   <!-- 
     <script src="lib/jquery.min.js" ></script>
   -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.31/jquery.min.js">  </script>
+  <script
+			  src="https://code.jquery.com/jquery-3.4.1.min.js"
+			  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+			  crossorigin="anonymous"></script>
   <link rel="stylesheet" href="lib/puretable.css"/>
   <link rel="stylesheet" href="lib/jquery-ui.css"/>
   <link rel="stylesheet" href="resources/demos/style.css"/>
@@ -18,7 +21,7 @@
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="lib/jquery-ui.js"></script>-->
   <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-  <script type="appplication/javascript" src="common.js"></script>
+  <script type="application/javascript" src="common.js"></script>
   <script>
       $(function(){
           $("#tabs").tabs();
@@ -71,11 +74,11 @@
         <div id="chartContainer" style="height: 370px;width:100%;"></div>
     </div>
 </body>
-<script type="text-javascript">
+<script type="text/javascript">
     var sprintID = '0';
     //var boardID = $('ddlSprint1 :selected').attr('boardid');
     //var type = $('ddlSprint1 :selected').attr('type');
-    var assignee = $('ddlAssignee').val() = "0" ? "" : "assignee%3D" + $('ddlAssignee').val() + "%20and%20";
+    var assignee = ($('ddlAssignee').val() == "0") ? "" : ("assignee%3D" + $('ddlAssignee').val() + "%20and%20");
 
     var status = $('ddlStatus1').val() == "0" ? "" : "statusCategory%20" + ($("#chkStatus:checked").length == 1 ? "": "%20not%20")+ "in%20(" + $('#ddlStatus1').val() + ")%20and%20";
 
@@ -91,7 +94,7 @@
             
             boardID = $('#ddlSprint1:selected').attr('boardid');
             type = $('ddlSprint1 :selected').attr('type');
-            assignee = $('ddlAssignee').val() = "0" ? "" : "assignee%3D" + $('ddlAssignee').val() + "%20and%20";
+            assignee = $('ddlAssignee').val() == "0" ? "" : "assignee%3D" + $('ddlAssignee').val() + "%20and%20";
             status = $('ddlStatus1').val() == "0" ? "" : "statusCategory%20" + ($("#chkStatus:checked").length == 1 ? "": "%20not%20")+ "in%20(" + $('#ddlStatus1').val() + ")%20and%20";
 
             //alert(boardID);
@@ -131,11 +134,11 @@
         loader(1);
         $("#ddlSprint1").attr('placeholder', 'Loading...');
         $("#ddlSprint1").append("<option value='0' boardid='" + boardID + "' type='" + type + "'>No Sprint...</option>");
-        $.get("https://athenajira.athenahealth.com/rest/agile/latest/board/ + boardID + "/sprint", 
+        $.get("https://jasonrdonald.atlassian.net/rest/agile/latest/board/" + boardID + "/sprint", 
             function(){
                 loader(0);
                 //$("#ddlSprint1").html('');
-                $.each(data.values), function(i, val){
+                $.each(data.values, function(i, val){
                     
                     selected = "";
                     //if(i==0) selected = "selected='selected'";
@@ -202,11 +205,11 @@
 
         loader(1);
 
-        $.get("https://athenajira.athenahealth.com/rest/agile/1.0/" + query1 + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        $.get("https://jasonrdonald.atlassian.net/rest/agile/1.0/" + query1 + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
         function(data, status){
             loader(0);
             $('storiesJson').val(JSON.stringify(data));
-            $("#stories").append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>
+            $("#stories").append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>"
             + "<th>Remaining</th><th>Original Estimate</th><th>Time Spent</th><th>Variance</th>"
             + "<th>% Completion</th><th>Sub-tasks</th><th>Story Points</th><th>Details</th>"
             + "</tr></thead>");
@@ -227,8 +230,8 @@
 
             $.each(data.issues, function(i, val) {
                 if((val.fields.status.statusCategory.colorName.toLowerCase() == 'green' 
-                    || val.fields.status.name.toLowerCase() == 'ready to test')
-                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    || val.fields.status.name.toLowerCase() == 'ready to test'
+                    || val.fields.status.name.toLowerCase() == 'ready to uat')
                     & val.fields.aggregateprogress.percent < 100)
                 {
                     varianceMarker = true;
@@ -257,8 +260,7 @@
 
                 var scopeChange = ((val.fields.sprint != undefined && val.fields.created > val.fields.sprint.startDate) ? "<span style='background: red;'>*</span>" : "");
 
-                $("#stories").append(
-                    "<tr class='hide' id='tr" + i + "'>"
+                $("#stories").append("<tr class='hide' id='tr" + i + "'>"
                         + "<td>" + (i+1) + "</td>"
                         + "<td>" + val.id + "</td>"
                         + "<td>" + scopeChange + val.key
@@ -277,7 +279,7 @@
                                 + "</td>"
                         + "<td align='right'>" + val.fields.aggregatetimespent / 3600
                                 + "</td>"
-                        + "<td align='right'>" + (varianceMarker) ? "<span style='background: red;'>" + variance + "</span>" : variance)
+                        + "<td align='right'>" + (varianceMarker ? "<span style='background: red;'>" + variance + "</span>" : variance)
                                 + "</td>"
                         + "<td align='right'>" + isNull(val.fields.aggregateprogress.percent) + "%"
                                 + "</td>"
@@ -287,8 +289,7 @@
                                 + "</td>"
                         + "<td align='right'>" + details
                                 + "</td>"
-                    + "</tr>"
-                    );
+                    + "</tr>");
                     totalVariance += (varianceMarker 
                         ? val.fields.aggregatetimeestimate / 3600 
                         : (
@@ -354,14 +355,14 @@
         loadgrid("Bugs", "Bug", query2);
     }
 
-    const loadgrid = (tasktype, type, query) =>
-    //function loadgrid(tasktype, type, query)
+    //const loadgrid = (tasktype, type, query) =>
+    function loadgrid(tasktype, type, query)
     {
-        $.get("https://athenajira.athenahealth.com/rest/agile/1.0/" + query + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        $.get("https://jasonrdonald.atlassian.net/rest/agile/1.0/" + query + "fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
         function(data, status){
             loader(0);
             $('#' + tasktype + 'Json').val(JSON.stringify(data));
-            $("#"+ tasktype).append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>
+            $("#"+ tasktype).append("<thead><tr><th>S.No.</th><th>ID</th><th>Key</th><th>Status</th><th>Assignee</th>"
             + "<th>Remaining</th><th>Original Estimate</th><th>Time Spent</th><th>Variance</th>"
             + "<th>% Completion</th><th>Sub-tasks</th><th>Story Points</th><th>Details</th>"
             + "</tr></thead>");
@@ -382,8 +383,8 @@
 
             $.each(data.issues, function(i, val) {
                 if((val.fields.status.statusCategory.colorName.toLowerCase() == 'green' 
-                    || val.fields.status.name.toLowerCase() == 'ready to test')
-                    || val.fields.status.name.toLowerCase() == 'ready to test')
+                    || val.fields.status.name.toLowerCase() == 'ready to test'
+                    || val.fields.status.name.toLowerCase() == 'ready to uat')
                     & val.fields.aggregateprogress.percent < 100)
                 {
                     varianceMarker = true;
@@ -432,7 +433,7 @@
                                 + "</td>"
                         + "<td align='right'>" + val.fields.aggregatetimespent / 3600
                                 + "</td>"
-                        + "<td align='right'>" + (varianceMarker) ? "<span style='background: red;'>" + variance + "</span>" : variance)
+                        + "<td align='right'>" + (varianceMarker ? "<span style='background: red;'>" + variance + "</span>" : variance)
                                 + "</td>"
                         + "<td align='right'>" + isNull(val.fields.aggregateprogress.percent) + "%"
                                 + "</td>"
@@ -504,8 +505,8 @@
         });
     }
 
-    const isNull = (data) =>
-    //function isNull(data)
+    //const isNull = (data) =>
+    function isNull(data)
     {
         if(data == null || data == undefined || data == "NaN" || isNaN(data))
             return '';
@@ -513,33 +514,34 @@
         return data;
     }
 
-    const onlyUnique = (value, index, self) =>
-    //function onlyUnique(value, index, self)
+    //const onlyUnique = (value, index, self) =>
+    function onlyUnique(value, index, self)
     {
         return self.indexOf(value) === index;
     }
 
-    const unhide = (issueid) =>
-    //function unhide(issueid)
+    //const unhide = (issueid) =>
+    function unhide(issueid)
     {
-        controls = "<input id='addwl_" + issueid + "_comment'" type='text' name='Comments'>Comments</input><br/>";
-        controls += "<input id='addwl_" + issueid + "_timeSpent'" type='number' name='Time Spent (hrs)'>Time Spent</input><br/>";
+        controls = "<input id='addwl_" + issueid + "_comment' type='text' name='Comments'>Comments</input><br/>";
+        controls += "<input id='addwl_" + issueid + "_timeSpent' type='number' name='Time Spent (hrs)'>Time Spent</input><br/>";
         $('#addwl_' + issueid).html(controls);
 
     }
 
-    const getwldata = (issueid) =>
-    //function getwldata(issueid)
+    //const getwldata = (issueid) =>
+    function getwldata(issueid)
     {
         var wldata = {
-            timeSpentSeconds: $('addwl_' + issueid + '_timeSpent').val() * 3600;
+            timeSpentSeconds: $('addwl_' + issueid + '_timeSpent').val() * 3600,
             comment: $('addwl_' + issueid + '_comment').val()
         };
 
         return wldata;
     }
 
-    const compare = (a, b) =>
+    //const compare = (a, b) =>
+    function compare(a, b)
     {
         var A = a.x;
         var B = b.x;
