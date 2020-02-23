@@ -11,10 +11,10 @@ function login(isinit, ctrl) {
 	login(isinit);
 }
 
-//function login(isint)
-const login = (isinit) => {
+function login(isinit) {
+//const login = (isinit) => {
     //TODO: Change URL
-	$.get("https://domain.com/rest/auth/1/session", function(data, status) {
+	$.get("https://jasonrdonald.atlassian.net/rest/auth/1/session", function(data, status) {
 			console.log('login: ' + status);
 
 		})
@@ -25,7 +25,7 @@ const login = (isinit) => {
 				onload(); //NoSprint
 			}
 		})
-		.fail(function() {
+		.fail(function(status) {
 			console.log('login fail');
 			$(loginctrl).html('You are not Logged in!');
 		});
@@ -118,9 +118,9 @@ function generateDDL(name, div)
 }
 
 //TODO: Change URL
-var baseurl = "https://domain.com";
-var api = "https://domain.com/rest/agile/latest/board/";
-var api2 = "https://domain.com/rest/api/latest/project/";
+var baseurl = "https://jasonrdonald.atlassian.net";
+var api = "https://jasonrdonald.atlassian.net/rest/agile/latest/board/";
+var api2 = "https://jasonrdonald.atlassian.net/rest/api/latest/project/";
 var project = "CONMGMT";
 var boardID = "12345";
 
