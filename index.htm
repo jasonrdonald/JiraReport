@@ -91,7 +91,7 @@
 
     var status = $('#ddlStatus1').val() == "0" ? "" : "statusCategory%20" + ($("#chkStatus:checked").length == 1 ? "": "%20not%20")+ "in%20(" + $('#ddlStatus1').val() + ")%20and%20";
 	
-	var boardID = '2779';   //TODO: Change boardID
+	var boardID = '1';   //TODO: Change boardID
     var type = 'Story';
 
     $(document).ready(function(){
@@ -145,8 +145,8 @@
         loader(1);
         $("#ddlSprint1").attr('placeholder', 'Loading...');
         $("#ddlSprint1").append("<option value='0' boardid='" + boardID + "' type='" + type + "'>No Sprint...</option>");
-		//var url = "https://domain.com/rest/agile/latest/board/" + boardID + "/sprint";
-		var url = "board-2779-sprint.json";
+		//var url = "https://jasonrdonald.atlassian.net/rest/agile/latest/board/" + boardID + "/sprint";
+		var url = "json/board-1-sprint.json";
         $.get(url, 
             function(data, status){
                 loader(0);
@@ -204,9 +204,9 @@
                 //query3 = withSprint + assignee + status + 'type%3D%22' + 'Bug' + '%22';
 				
 
-					query1 = "sprint-" + sprintID + "-query1.json";
-					query2 = "sprint-" + sprintID + "-query2.json";
-					query3 = "sprint-" + sprintID + "-query3.json";
+					query1 = "json/sprint-" + sprintID + "-story.json";
+					query2 = "json/sprint-" + sprintID + "-task.json";
+					query3 = "json/sprint-" + sprintID + "-bug.json";
             }
             else{
 				/*
@@ -218,9 +218,9 @@
 				query2 = "board/2779/issue?jql=Project%20%3D%20CONMGMT%20and%20sprint%20is%20EMPTY%20and%20%28%22Epic%20Link%22%20is%20EMPTY%20and%20fixVersion%20is%20EMPTY%29%20and%20assignee%20is%20EMPTY%20and%20statusCategory%20%20not%20in%20%28%22To%20Do%22%2C%20%22In%20Progress%22%2C%20%22Done%22%29%20and%20type%3DSub-task&";
 				query3 = "board/2779/issue?jql=Project%20%3D%20CONMGMT%20and%20sprint%20is%20EMPTY%20and%20%28%22Epic%20Link%22%20is%20EMPTY%20and%20fixVersion%20is%20EMPTY%29%20and%20assignee%20is%20EMPTY%20and%20statusCategory%20%20not%20in%20%28%22To%20Do%22%2C%20%22In%20Progress%22%2C%20%22Done%22%29%20and%20type%3D%22Bug%22&";
 				*/
-				query1 = "nosprint-query1.json";
-				query2 = "nosprint-query2.json";
-				query3 = "nosprint-query3.json";
+				query1 = "json/nosprint-query1.json";
+				query2 = "json/nosprint-query2.json";
+				query3 = "json/nosprint-query3.json";
             }
         }
         else
@@ -232,7 +232,7 @@
 
         loader(1);
 
-        //$.get("https://domain.com/rest/agile/1.0/" + query1 + //"fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        //$.get("https://jasonrdonald.atlassian.net/rest/agile/1.0/" + query1 + //"fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
 		$.get(query1,
         function(data, status){
             loader(0);
@@ -313,7 +313,7 @@
                                 + "</td>"
                         + "<td align='right'>" + (val.fields.subtasks.length)
                                 + "</td>"
-                        + "<td align='right'>" + val.fields.customfield_10004
+                        + "<td align='right'>" + val.fields.customfield_10024
                                 + "</td>"
                         + "<td align='right'>" + details
                                 + "</td>"
@@ -327,7 +327,7 @@
                     totalOriginal += val.fields.aggregatetimeoriginalestimate / 3600;
                     totalTimeSpent += val.fields.aggregatetimespent / 3600;
 
-                    totalStoryPoints += val.fields.customfield_10004;
+                    totalStoryPoints += val.fields.customfield_10024;
 
                     countIssues += 1;
                     countSubtask += (val.fields.subtasks.length);
@@ -387,7 +387,7 @@
     //const loadgrid = (tasktype, type, query) =>
     function loadgrid(tasktype, type, query)
     {
-        //$.get("https://domain.com/rest/agile/1.0/" + query + //"fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
+        //$.get("https://jasonrdonald.atlassian.net/rest/agile/1.0/" + query + //"fields=assignee,creator,reporter,subtasks,sprint,issuetype,aggregateprogress,aggregatetimeestimate,aggregateoriginalestimate,aggregatetimespent,status,created,epic,fixVersions,duedate,comments,labels,components",
 		$.get(query,
         function(data, status){
             loader(0);
@@ -469,7 +469,7 @@
                                 + "</td>"
                         + "<td align='right'>" + (val.fields.subtasks.length)
                                 + "</td>"
-                        + "<td align='right'>" + val.fields.customfield_10004
+                        + "<td align='right'>" + val.fields.customfield_10024
                                 + "</td>"
                         + "<td align='right'>" + details
                                 + "</td>"
@@ -484,7 +484,7 @@
                     totalOriginal += val.fields.aggregatetimeoriginalestimate / 3600;
                     totalTimeSpent += val.fields.aggregatetimespent / 3600;
 
-                    totalStoryPoints += val.fields.customfield_10004;
+                    totalStoryPoints += val.fields.customfield_10024;
 
                     countIssues += 1;
                     countSubtask += (val.fields.subtasks.length);

@@ -14,8 +14,8 @@ function login(isinit, ctrl) {
 function login(isinit) {
 //const login = (isinit) => {
     //TODO: Change URL
-	//$.get("https://domain.com/rest/auth/1/session", function(data, status) {
-	$.get("session.json", function(data, status) {
+	//$.get("https://jasonrdonald.atlassian.net/rest/auth/1/session", function(data, status) {
+	$.get("json/session.json", function(data, status) {
 			console.log('login: ' + status);
 
 		})
@@ -119,13 +119,13 @@ function generateDDL(name, div)
 }
 
 //TODO: Change URL
-var baseurl = "https://domain.com";
-//var api = "https://domain.com/rest/agile/latest/board/";
-//var api2 = "https://domain.com/rest/api/latest/project/";
-var api = "https://domain.com/rest/agile/latest/board/";
-var api2 = "https://domain.com/rest/api/latest/project/";
-var project = "CONMGMT";//projectKey=23803
-var boardID = "2779";
+var baseurl = "https://jasonrdonald.atlassian.net";
+//var api = "https://jasonrdonald.atlassian.net/rest/agile/latest/board/";
+//var api2 = "https://jasonrdonald.atlassian.net/rest/api/latest/project/";
+var api = "https://jasonrdonald.atlassian.net/rest/agile/latest/board/";
+var api2 = "https://jasonrdonald.atlassian.net/rest/api/latest/project/";
+var project = "CONMGMT";//projectKey=10000
+var boardID = "1";
 
 var type = "epic";
 var debug = false;
@@ -145,7 +145,7 @@ function getProject()
 {
     loader(1);
     //var query = api2 + project;
-	var query = "project-CONMGMT.json";
+	var query = "json/project-10000.json";
     $.get(query, function(data, status){
         loader(0);
         generateDDL("Component", "Project");
@@ -194,7 +194,7 @@ var IssueType = '';
 function getProjectStatuses()
 {
     //var query = api2 + project + "/statuses";
-	var query = "project-CONMGMT-statuses.json";
+	var query = "json/project-10000-statuses.json";
     $.get(query, function(data, status){
         ProjectStatuses = data;
     })
@@ -206,8 +206,8 @@ function getProjectStatuses()
 function getResolutions()
 {
     //var query = baseurl + "rest/api/latest/resolution";
-	//https://domain.com/rest/api/latest/resolution
-	var query = "resolution.json";
+	//https://jasonrdonald.atlassian.net/rest/api/latest/resolution
+	var query = "json/resolution.json";
     $.get(query, function(data, status){
         generateDDL("Resolution", "IssueType");
 
@@ -222,7 +222,7 @@ function getBoard()
 {
     loader(1);
     //$.get(api, {"projectKeyOrId" : project}, 
-	$.get("board.json", {"projectKeyOrId" : project}, 
+	$.get("json/board.json", {"projectKeyOrId" : project}, 
         function(data, status){
             loader(0);
             generateDDL("Board","Board");
@@ -260,8 +260,8 @@ function getBoard()
 function getSprints()
 {
     //var query = api + boardID + "/" + "sprint"; 
-	//"https://domain.com/rest/agile/latest/board/2779/sprint"
-	var query = "board-2779-sprint.json";
+	//"https://jasonrdonald.atlassian.net/rest/agile/latest/board/2779/sprint"
+	var query = "json/board-1-sprint.json";
     $.get(query, function(data, status){
         generateDDL("Sprint", "Board");
         $.each(data.values, function(i, val){
@@ -277,8 +277,8 @@ function getEpics(issuetype)
 {
     //issuetype : epic | issue
     //var query = api + boardID + "/" + issuetype;
-	//https://domain.com/rest/agile/latest/board/2779/epic
-	var query = "board-2779-epic.json";
+	//https://jasonrdonald.atlassian.net/rest/agile/latest/board/2779/epic
+	var query = "json/board-1-epic.json";
     $.get(query, function(data, status){
         generateDDL("Epic", "Board");
         $.each(data.values, function(i, val){
